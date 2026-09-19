@@ -20,35 +20,33 @@ const AUDIENCES = [
   "Dentists",
 ];
 
-type Slot = {
-  left: number;
-  top: number;
-  w: number;
-  ratio: string;
-  variant: "s" | "p";
-  media: "video" | "poster";
-};
+type Cell = { variant: "s" | "p"; media: "video" | "poster" };
 
 /**
- * Ordered by prominence: slot 0 takes the top-ranked result for the active
- * query, so re-sorting visibly promotes different work into the big cards.
- * Thirteen slots for thirteen reels — the count in the bar is what you see.
+ * Two scrollable rows, read left to right in rank order: row one takes results
+ * 1–7, row two takes 8–13, so re-sorting visibly promotes work to the front of
+ * the top row. Portrait and square alternate to break the grid up, and only the
+ * first few cards carry video — thirteen playing at once is not worth the bytes.
  */
-const SLOTS: Slot[] = [
-  { left: 77.5, top: 28, w: 19.5, ratio: "4 / 5", variant: "p", media: "video" },
-  { left: 39.5, top: -1, w: 16.5, ratio: "4 / 5", variant: "p", media: "video" },
-  { left: 4, top: 52, w: 15.5, ratio: "4 / 5", variant: "p", media: "video" },
-  { left: 1.5, top: 17, w: 13, ratio: "1 / 1", variant: "s", media: "video" },
-  { left: 30.5, top: 71, w: 12, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 67, top: 74, w: 9.7, ratio: "4 / 5", variant: "p", media: "poster" },
-  { left: 52, top: 62, w: 8.6, ratio: "4 / 5", variant: "p", media: "poster" },
-  { left: 27.5, top: 30, w: 8.4, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 62, top: 4, w: 7.6, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 17.5, top: 2, w: 7.2, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 78, top: 6, w: 7, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 92.5, top: 3, w: 6.7, ratio: "1 / 1", variant: "s", media: "poster" },
-  { left: 44.5, top: 79, w: 6.6, ratio: "1 / 1", variant: "s", media: "poster" },
+const ROW_A: Cell[] = [
+  { variant: "p", media: "video" },
+  { variant: "p", media: "video" },
+  { variant: "s", media: "video" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
 ];
+const ROW_B: Cell[] = [
+  { variant: "s", media: "video" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "poster" },
+];
+
+const RATIO = { p: "4 / 5", s: "1 / 1" } as const;
 
 /**
  * Splits a line into per-word masks so each word can slide up independently.
@@ -75,6 +73,8 @@ export default function Hero() {
   const root = useRef<HTMLElement>(null);
   const queryRef = useRef<HTMLSpanElement>(null);
   const audienceRef = useRef<HTMLSpanElement>(null);
+  const rowA = useRef<HTMLDivElement>(null);
+  const rowB = useRef<HTMLDivElement>(null);
   const selectRef = useRef<((i: number) => void) | null>(null);
   const [brief, setBrief] = useState(0);
   const [auto, setAuto] = useState(true);
@@ -89,6 +89,13 @@ export default function Hero() {
     });
   }, []);
 
+  // A new query puts a new reel in first place — send both rows back to it.
+  useEffect(() => {
+    for (const ref of [rowA, rowB]) {
+      ref.current?.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  }, [brief]);
+
   useIsoLayoutEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -102,7 +109,7 @@ export default function Hero() {
         return;
       }
 
-      // The wall starts hidden; the first pass of the loop IS its entrance.
+      // The rows start hidden; the first pass of the loop IS their entrance.
       gsap.set(cards, { opacity: 0, scale: 0.88, y: 24 });
       gsap.set(stats, { opacity: 0 });
 
@@ -124,14 +131,6 @@ export default function Hero() {
           { opacity: 0, y: 16, duration: 0.7, ease: "power3.out" },
           "-=0.5",
         );
-
-      gsap.to(".card-canvas", {
-        xPercent: -3.2,
-        duration: 26,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-      });
 
       // ── Offer-statement word cycle ──────────────────────────────
       let audienceIdx = 0;
@@ -185,7 +184,8 @@ export default function Hero() {
               y: 0,
               duration: 0.6,
               ease: "power3.out",
-              stagger: { each: 0.028, from: "random" },
+              // Left to right: the answer lands in rank order.
+              stagger: { each: 0.032, from: "start" },
             },
             "+=0.06",
           )
@@ -200,16 +200,19 @@ export default function Hero() {
               ease: "back.out(2)",
               stagger: 0.07,
             },
-            "-=0.35",
+            "-=0.4",
           );
 
+      /* Ghosted, not cleared. Two tidy rows dropping to zero between queries
+         reads as a loading state; holding them faint keeps the shape of the
+         answer while it re-sorts. */
       const hide = (tl: gsap.core.Timeline) =>
         tl
           .to(stats, { opacity: 0, scale: 0.92, duration: 0.28, ease: "power2.in" })
           .to(
             cards,
             {
-              opacity: 0,
+              opacity: 0.12,
               scale: 0.94,
               y: 10,
               duration: 0.38,
@@ -277,6 +280,46 @@ export default function Hero() {
 
   const active = BRIEFS[brief];
 
+  /** One scrollable row. `offset` is the rank of its first card. */
+  const Row = ({
+    cells,
+    offset,
+    scrollRef,
+    indent = false,
+  }: {
+    cells: Cell[];
+    offset: number;
+    scrollRef: React.RefObject<HTMLDivElement | null>;
+    indent?: boolean;
+  }) => (
+    <div
+      ref={scrollRef}
+      /* scroll-padding matches the gutter: without it the snap points sit at
+         the card edge and the row parks with its first card flush to the
+         viewport, out of line with the masthead above. */
+      className={`no-scrollbar flex h-[190px] snap-x scroll-pl-5 gap-3 overflow-x-auto px-5 sm:h-[230px] md:gap-4 md:scroll-pl-8 md:px-8 lg:h-[270px] ${
+        // Staggering the second row keeps the two from locking into a grid.
+        indent ? "lg:scroll-pl-[7%] lg:pl-[7%]" : ""
+      }`}
+    >
+      {cells.map((cell, i) => {
+        const reel = active.results[offset + i];
+        if (!reel) return null;
+        return (
+          <ReelCard
+            // Keyed by position so React updates in place and GSAP keeps its targets.
+            key={`cell-${offset + i}`}
+            reel={reel}
+            media={cell.media}
+            variant={cell.variant}
+            className="h-full shrink-0 snap-start"
+            style={{ aspectRatio: RATIO[cell.variant] }}
+          />
+        );
+      })}
+    </div>
+  );
+
   return (
     <header ref={root} className="relative flex flex-col">
       {/* ── Top bar ─────────────────────────────────────────────── */}
@@ -331,7 +374,7 @@ export default function Hero() {
               <br />
               <Words text="Made for" />{" "}
               <span className="relative -my-[0.18em] inline-block overflow-hidden py-[0.18em] align-bottom">
-                <span ref={audienceRef} className="inline-block bg-tangerine px-1.5 pb-[0.06em]">
+                <span ref={audienceRef} className="inline-block bg-sky px-1.5 pb-[0.06em]">
                   {AUDIENCES[0]}
                 </span>
               </span>
@@ -359,71 +402,34 @@ export default function Hero() {
       </div>
 
       {/* ── Result wall ─────────────────────────────────────────── */}
-      <div className="relative isolate overflow-hidden border-y border-rule bg-paper">
-        <div className="bg-grid relative hidden h-[640px] md:block xl:h-[700px]">
-          <div className="card-canvas absolute inset-0 w-[106%]">
-            {SLOTS.map((s, i) => {
-              const reel = active.results[i];
-              if (!reel) return null;
-              return (
-                <ReelCard
-                  // Keyed by slot so React updates in place and GSAP keeps its targets.
-                  key={`slot-${i}`}
-                  reel={reel}
-                  media={s.media}
-                  variant={s.variant}
-                  style={{
-                    left: `${s.left}%`,
-                    top: `${s.top}%`,
-                    width: `${s.w}%`,
-                    aspectRatio: s.ratio,
-                  }}
+      <div className="bg-grid relative isolate border-y border-rule bg-paper pb-7 md:pb-9">
+        {/* The query sits above its results, the way a search does. */}
+        <div className="px-5 pb-5 pt-7 md:px-8 md:pt-9">
+          <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-4">
+            <div className="brief-bar flex w-full items-center gap-3 rounded-full border border-black/[0.06] bg-card/95 py-2 pl-6 pr-2 shadow-[0_2px_6px_rgba(16,16,20,0.05),0_24px_50px_-24px_rgba(16,16,20,0.28)] backdrop-blur-sm">
+              <span className="flex min-w-0 flex-1 items-center font-mono text-[11px] uppercase tracking-[0.13em] text-ink/80 lg:text-[12px]">
+                <span ref={queryRef} className="truncate" />
+                <span
+                  aria-hidden="true"
+                  className="ml-0.5 inline-block h-[1.05em] w-[7px] shrink-0 animate-[blink_1.05s_steps(1)_infinite] bg-ink/70 align-middle"
                 />
-              );
-            })}
+              </span>
 
-            <StatStack
-              stats={active.stats}
-              className="absolute z-20 hidden lg:block"
-              style={{ left: "60.5%", top: "34%" }}
-            />
-            <StatCard
-              stat={{
-                value: active.results[0].viewsLabel,
-                label: "top result",
-                accent: "magenta",
-              }}
-              className="absolute z-20 hidden xl:flex"
-              style={{ left: "20.5%", top: "82%" }}
-            />
-          </div>
+              <span className="hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-mute md:inline">
+                {active.count} reels · {active.sortLabel}
+              </span>
 
-          {/* Brief bar — a real query over the work below it */}
-          <div className="brief-bar pointer-events-none absolute inset-x-0 top-1/2 z-20 -translate-y-1/2 px-8">
-            <div className="mx-auto flex w-full max-w-[880px] flex-col items-center gap-3">
-              <div className="pointer-events-auto flex w-full items-center gap-3 rounded-full border border-black/[0.06] bg-[#EDEDEA]/95 py-2 pl-6 pr-2 shadow-[0_2px_6px_rgba(16,16,20,0.05),0_24px_50px_-24px_rgba(16,16,20,0.35)] backdrop-blur-sm">
-                <span className="flex min-w-0 flex-1 items-center font-mono text-[11px] uppercase tracking-[0.13em] text-ink/80 lg:text-[12px]">
-                  <span ref={queryRef} className="truncate" />
-                  <span
-                    aria-hidden="true"
-                    className="ml-0.5 inline-block h-[1.05em] w-[7px] shrink-0 animate-[blink_1.05s_steps(1)_infinite] bg-ink/70 align-middle"
-                  />
-                </span>
+              <a
+                href="#work"
+                className="shrink-0 whitespace-nowrap rounded-full bg-ink px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-transform hover:-translate-y-px lg:text-[11px]"
+              >
+                See the work
+              </a>
+            </div>
 
-                <span className="hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-mute lg:inline">
-                  {active.count} reels · {active.sortLabel}
-                </span>
-
-                <a
-                  href="#work"
-                  className="shrink-0 rounded-full bg-card px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink shadow-[0_1px_2px_rgba(16,16,20,0.08)] transition-transform hover:-translate-y-px lg:text-[11px]"
-                >
-                  See the work
-                </a>
-              </div>
-
-              {/* Drive it yourself */}
-              <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-2">
+            {/* Drive it yourself */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-mute">
                   {auto ? "Try:" : "Showing:"}
                 </span>
@@ -443,56 +449,25 @@ export default function Hero() {
                   </button>
                 ))}
               </div>
+
+              {/* Stacked cards that fan down over the rows on hover */}
+              <StatStack
+                stats={active.stats}
+                className="relative z-20 hidden shrink-0 lg:block"
+              />
             </div>
           </div>
         </div>
 
-        {/* Mobile: the top four results for the active query */}
-        <div className="bg-grid md:hidden">
-          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 py-6">
-            {active.results.slice(0, 6).map((r) => (
-              <a
-                key={r.id}
-                href={r.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative w-[42vw] shrink-0 snap-start overflow-hidden rounded-2xl ring-1 ring-black/[0.07]"
-                style={{ aspectRatio: "4 / 5" }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/reels/${r.id}-p.jpg`}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 pt-7 font-mono text-[10px] text-white tabular">
-                  {r.viewsLabel} views
-                </span>
-              </a>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 px-5 pb-4">
-            {BRIEFS.map((b, i) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setBrief(i)}
-                aria-pressed={brief === i}
-                className={`rounded-full border px-3 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] ${
-                  brief === i
-                    ? "border-ink bg-ink text-white"
-                    : "border-black/[0.12] bg-card/80 text-ink/70"
-                }`}
-              >
-                {b.chip}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 px-5 pb-6">
-            {active.stats.map((s, i) => (
-              <StatCard key={i} stat={s} />
-            ))}
-          </div>
+        <div className="flex flex-col gap-3 md:gap-4">
+          <Row cells={ROW_A} offset={0} scrollRef={rowA} />
+          <Row cells={ROW_B} offset={ROW_A.length} scrollRef={rowB} indent />
+        </div>
+
+        <div className="flex flex-wrap gap-2 px-5 pt-6 md:px-8 lg:hidden">
+          {active.stats.map((s, i) => (
+            <StatCard key={i} stat={s} />
+          ))}
         </div>
       </div>
     </header>

@@ -49,7 +49,7 @@ export default function ReelCard({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${reel.viewsLabel} views on Instagram — opens in a new tab`}
-      className={`reel-card group absolute block overflow-hidden rounded-2xl bg-ink/5 ring-1 ring-black/[0.07] shadow-[0_1px_2px_rgba(16,16,20,0.04),0_12px_28px_-12px_rgba(16,16,20,0.18)] transition-[transform,box-shadow] duration-500 ease-[var(--ease-out)] hover:-translate-y-1 hover:shadow-[0_2px_4px_rgba(16,16,20,0.06),0_22px_44px_-16px_rgba(16,16,20,0.3)] ${className}`}
+      className={`reel-card group relative block overflow-hidden rounded-2xl bg-ink/5 ring-1 ring-black/[0.07] shadow-[0_1px_2px_rgba(16,16,20,0.04),0_12px_28px_-12px_rgba(16,16,20,0.18)] transition-[transform,box-shadow] duration-500 ease-[var(--ease-out)] hover:-translate-y-1 hover:shadow-[0_2px_4px_rgba(16,16,20,0.06),0_22px_44px_-16px_rgba(16,16,20,0.3)] ${className}`}
       style={style}
     >
       {/* Always painted — cached from the preload, so a swap never shows a hole */}

@@ -36,15 +36,15 @@ export function Section({
 }
 
 const ACCENT: Record<string, string> = {
-  teal: "var(--teal)",
-  magenta: "var(--magenta)",
-  tangerine: "var(--tangerine)",
-  indigo: "var(--indigo)",
+  coral: "var(--coral)",
+  plum: "var(--plum)",
+  sky: "var(--sky)",
+  navy: "var(--navy)",
 };
 
 export function Eyebrow({
   children,
-  accent = "teal",
+  accent = "coral",
   onInk = false,
 }: {
   children: ReactNode;
@@ -88,7 +88,7 @@ export function SectionHead({
   eyebrow,
   heading,
   lede,
-  accent = "teal",
+  accent = "coral",
   onInk = false,
   className = "",
 }: {

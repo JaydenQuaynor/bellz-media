@@ -8,7 +8,7 @@ export function Founding() {
     <Section id="founding" tone="card">
       <div
         className="flex flex-col gap-8 rounded-2xl p-8 md:p-12 lg:p-14"
-        style={{ background: "var(--tangerine)" }}
+        style={{ background: "var(--sky)" }}
       >
         <div data-reveal="group" className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
           <div className="flex flex-col gap-5">
@@ -52,7 +52,7 @@ export function FinalCta() {
   return (
     <Section id="contact" tone="ink" grid>
       <div data-reveal="group" className="flex flex-col items-start gap-9 lg:gap-11">
-        <Eyebrow accent="tangerine" onInk>
+        <Eyebrow accent="sky" onInk>
           Book it
         </Eyebrow>
 

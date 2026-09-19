@@ -9,7 +9,7 @@ export default function Problem() {
           <SectionHead
             eyebrow={PROBLEM.eyebrow}
             heading={PROBLEM.heading}
-            accent="magenta"
+            accent="plum"
           />
           <div className="flex max-w-[54ch] flex-col gap-4">
             {PROBLEM.body.map((p) => (

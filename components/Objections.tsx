@@ -10,7 +10,7 @@ export default function Objections() {
             eyebrow={OBJECTIONS.eyebrow}
             heading={OBJECTIONS.heading}
             lede={OBJECTIONS.lede}
-            accent="magenta"
+            accent="plum"
           />
         </div>
 

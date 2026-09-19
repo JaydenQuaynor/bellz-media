@@ -9,26 +9,31 @@
 :root {
   color-scheme: light;
 
-  /* Ground — neutrals biased warm, toward the accent, not stock grey */
-  --paper: #f6f4f1;
+  /* Ground — neutrals biased cool, toward the accent, not stock grey */
+  --paper: #f2f4f5;
   --card: #ffffff;
-  --ink: #14100f;
-  --mute: #7a7068;
-  --rule: rgba(20, 16, 15, 0.1);
-  --rule-strong: rgba(20, 16, 15, 0.22);
+  --ink: #0f1318;
+  --mute: #6f7681;
+  --rule: rgba(15, 19, 24, 0.1);
+  --rule-strong: rgba(15, 19, 24, 0.22);
 
-  /* Accents. Tangerine leads: it is the only one used both as a fill under
-     ink text and as bright text on ink, so it is tuned to clear 4.5:1 in
-     both directions (8.0:1 against --ink). The other three are dark enough
-     to carry white text on a filled panel. */
-  --tangerine: #ff8a1f;
-  --teal: #046d76;
-  --magenta: #d6176b;
-  --indigo: #2d1e8c;
+  /* Accents, each tuned to the surfaces it actually lands on:
+       --sky    the signature. The only one used in both directions — as a
+                fill under ink text and as bright text on ink — so it sits
+                at 8.4:1 against --ink and clears AA either way.
+       --coral  the only other one that appears on light AND dark (focus
+                ring, comparison ticks, bullets on the dark pricing card),
+                so it is held mid-luminance: 4.6:1 on white, 4.1:1 on ink.
+       --plum   light surfaces only, and white text on a filled pill.
+       --navy   deep fills carrying white text. */
+  --sky: #35b9f1;
+  --coral: #d1441f;
+  --plum: #9b1b6b;
+  --navy: #16307d;
 
   /* Grid canvas */
   --grid-size: 32px;
-  --grid-line: rgba(20, 16, 15, 0.075);
+  --grid-line: rgba(15, 19, 24, 0.075);
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -41,10 +46,10 @@
   --color-mute: var(--mute);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-tangerine: var(--tangerine);
-  --color-teal: var(--teal);
-  --color-magenta: var(--magenta);
-  --color-indigo: var(--indigo);
+  --color-sky: var(--sky);
+  --color-coral: var(--coral);
+  --color-plum: var(--plum);
+  --color-navy: var(--navy);
 
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-azeret), ui-monospace, "SF Mono", Menlo, monospace;
@@ -139,13 +144,13 @@ body {
 
 /* Visible keyboard focus everywhere */
 :where(a, button, input, [tabindex]):focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--coral);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--tangerine);
+  background: var(--sky);
   color: var(--ink);
 }
 
@@ -157,4 +162,13 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Horizontal reel rows: the cut-off card at the edge is the scroll cue,
+   so the bar itself is noise. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

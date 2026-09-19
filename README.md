@@ -117,39 +117,48 @@ deliberate, and it's load-bearing for trust. Don't soften it.
 ## Palette
 
 Four accents, defined once in [`app/globals.css`](app/globals.css) and exposed
-to Tailwind through `@theme inline`. Nothing hardcodes a hex except the OG card,
-which Satori renders outside CSS.
+to Tailwind through `@theme inline`. Nothing hardcodes a hex except the OG card
+and the favicon, which are rendered outside CSS.
 
-| Token         | Hex       | Role                                                    |
-| ------------- | --------- | ------------------------------------------------------- |
-| `--tangerine` | `#ff8a1f` | the signature — highlight, favicon, share card, selection |
-| `--teal`      | `#046d76` | focus ring, comparison ticks, section eyebrows           |
-| `--magenta`   | `#d6176b` | kickers and stat cards                                   |
-| `--indigo`    | `#2d1e8c` | the creator panel                                        |
+| Token     | Hex       | Where it lands                                            |
+| --------- | --------- | --------------------------------------------------------- |
+| `--sky`   | `#35b9f1` | the signature — highlight, favicon, share card, selection   |
+| `--coral` | `#d1441f` | focus ring, comparison ticks, eyebrows, dark-card bullets   |
+| `--plum`  | `#9b1b6b` | kickers and stat cards, light surfaces only                 |
+| `--navy`  | `#16307d` | deep fills carrying white text (the creator panel)          |
 
-**Tangerine is the constrained one.** It's the only accent used in both
-directions — as a fill under ink text (the founding-clients panel, the hero's
-highlighted word) *and* as bright text on an ink panel (the Mechanism figures).
-It's tuned to 8:1 against `--ink` so it clears AA either way. If you retune it,
-check both, and check `text-ink/75` on the founding panel — at `/60` it drops
-under 4.5:1.
+Two of them are constrained, and a recolor has to respect it:
 
-The other three only ever carry white text on a filled panel, so they're kept
-dark enough for that and can be brighter or duller without breaking anything.
+- **`--sky` is used in both directions** — as a fill under ink text (the
+  founding-clients panel, the hero's highlighted word) *and* as bright text on
+  an ink panel (the Mechanism figures). It sits at 8.4:1 against `--ink` so it
+  clears AA either way. Also check `text-ink/75` on the founding panel; at
+  `/60` it drops under 4.5:1.
+- **`--coral` appears on light and dark**, so it's held mid-luminance: 4.6:1
+  with white text, 4.1:1 against `--ink`. Darken it and the bullets on the
+  dark pricing card disappear; lighten it and the comparison ticks fail.
 
-Neutrals are warm on purpose (`--ink` is `#14100f`, not a neutral black) so the
-page reads as one temperature with the orange rather than orange dropped onto
+`--plum` and `--navy` only ever carry white text on a filled panel, so they're
+free to move as long as they stay dark enough for that.
+
+Neutrals are cool on purpose (`--ink` is `#0f1318`, not a neutral black) so the
+page reads as one temperature with the blue rather than blue dropped onto
 stock grey.
 
 ## Animation
 
 - **Hero** ([`components/Hero.tsx`](components/Hero.tsx)) — the brief bar types
-  a query and the wall genuinely answers it. Each query is a ranker in
-  [`lib/briefs.ts`](lib/briefs.ts) over the real reel data; slots are ordered by
-  prominence, so slot 0 always holds the top result and asking for Connecticut
-  promotes the Connecticut work into the biggest cards. Chips let a visitor
-  drive it, which cancels the auto-cycle. Thirteen slots for thirteen reels, so
-  the count shown in the bar is exactly what is on screen.
+  a query and the two rows below genuinely answer it. Each query is a ranker in
+  [`lib/briefs.ts`](lib/briefs.ts) over the real reel data; the rows read left
+  to right in rank order, so asking for Connecticut promotes that work to the
+  front of the top row. Chips let a visitor drive it, which cancels the
+  auto-cycle. Thirteen cards for thirteen reels — seven up, six below — so the
+  count shown in the bar is exactly what is on screen.
+
+  Both rows scroll horizontally and carry `scroll-pl-*` matching the page
+  gutter; without it the snap point sits at the card edge and the row parks
+  out of line with the masthead. Only the first few cards are video — thirteen
+  playing at once is not worth the bytes.
 - **Scroll reveals** ([`components/ScrollReveal.tsx`](components/ScrollReveal.tsx))
   — driven by `data-reveal` / `data-reveal="group"` / `data-count` attributes,
   so the section components stay server-rendered. Add the attribute, get the

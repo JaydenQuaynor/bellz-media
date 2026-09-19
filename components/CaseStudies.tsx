@@ -20,21 +20,21 @@ const CASES: Case[] = [
     kicker: "Organic reach",
     title: "3.47M views from an account nobody followed",
     read: "Fifteen seconds, no production budget, and no audience to seed it — the account had a few hundred followers when this went out. It reached more people than the population of Connecticut. This is the proof that distribution on short-form is earned by the video, not granted by the account.",
-    accent: "var(--teal)",
+    accent: "var(--coral)",
   },
   {
     id: "DX12-bSuxkM",
     kicker: "Product launch",
     title: "A 19-second product explainer that held 417K",
     read: "QuickMovee, a student-to-student campus app. Product videos are the hardest thing to make travel, because the viewer knows within a second that they're being sold to. This one ran nineteen seconds — long, for the format — and still pulled a like rate above the account's own average. That's the format transferring to a real offer.",
-    accent: "var(--magenta)",
+    accent: "var(--plum)",
   },
   {
     id: "DUMiUOkDlqt",
     kicker: "Local audience",
     title: "1.25M views, and the strongest engagement on the account",
     read: "Made for a Connecticut audience and tagged to the university crowd in Storrs. It carries the strongest like rate of anything on the account — an audience that recognises itself engages harder than a general one does. For a business selling inside the state, that ratio matters more than the raw reach number next to it.",
-    accent: "var(--indigo)",
+    accent: "var(--navy)",
   },
 ];
 
@@ -86,7 +86,7 @@ export default function CaseStudies() {
           eyebrow="Selected work"
           heading="Three that travelled."
           lede="Open any of them on Instagram and check the numbers yourself. Every figure on this page came out of the account, not a slide."
-          accent="teal"
+          accent="coral"
         />
 
         <div className="flex flex-col gap-16 lg:gap-24">

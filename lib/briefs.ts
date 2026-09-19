@@ -3,7 +3,7 @@ import { ACCOUNT, REELS, type Reel } from "./reels";
 export type Stat = {
   value: string;
   label: string;
-  accent: "teal" | "magenta" | "tangerine" | "indigo";
+  accent: "coral" | "plum" | "sky" | "navy";
 };
 
 const byViews = (a: Reel, b: Reel) => b.views - a.views;
@@ -49,9 +49,9 @@ const SEEDS: BriefSeed[] = [
     chip: "Reach",
     sortLabel: "most viewed first",
     stats: [
-      { value: ACCOUNT.totalViewsLabel, label: "views, 52 reels", accent: "teal" },
-      { value: String(ACCOUNT.over400k), label: "past 400K each", accent: "magenta" },
-      { value: ACCOUNT.totalLikesLabel, label: "likes", accent: "indigo" },
+      { value: ACCOUNT.totalViewsLabel, label: "views, 52 reels", accent: "coral" },
+      { value: String(ACCOUNT.over400k), label: "past 400K each", accent: "plum" },
+      { value: ACCOUNT.totalLikesLabel, label: "likes", accent: "navy" },
     ],
   },
   {
@@ -60,9 +60,9 @@ const SEEDS: BriefSeed[] = [
     chip: "Product launch",
     sortLabel: "product work first",
     stats: [
-      { value: "416,947", label: "views · QuickMovee", accent: "magenta" },
-      { value: "20,778", label: "likes on one explainer", accent: "teal" },
-      { value: "19s", label: "runtime", accent: "tangerine" },
+      { value: "416,947", label: "views · QuickMovee", accent: "plum" },
+      { value: "20,778", label: "likes on one explainer", accent: "coral" },
+      { value: "19s", label: "runtime", accent: "sky" },
     ],
   },
   {
@@ -71,9 +71,9 @@ const SEEDS: BriefSeed[] = [
     chip: "Connecticut",
     sortLabel: "Connecticut first",
     stats: [
-      { value: ACCOUNT.localViewsLabel, label: "views in Connecticut", accent: "indigo" },
-      { value: String(ACCOUNT.localReels), label: "reels made in Connecticut", accent: "tangerine" },
-      { value: "8 mo", label: "standing start", accent: "teal" },
+      { value: ACCOUNT.localViewsLabel, label: "views in Connecticut", accent: "navy" },
+      { value: String(ACCOUNT.localReels), label: "reels made in Connecticut", accent: "sky" },
+      { value: "8 mo", label: "standing start", accent: "coral" },
     ],
   },
   {
@@ -82,9 +82,9 @@ const SEEDS: BriefSeed[] = [
     chip: "Engagement",
     sortLabel: "highest like rate first",
     stats: [
-      { value: "7.9%", label: "best like rate", accent: "tangerine" },
-      { value: ACCOUNT.totalLikesLabel, label: "likes total", accent: "teal" },
-      { value: "2,064", label: "comments", accent: "magenta" },
+      { value: "7.9%", label: "best like rate", accent: "sky" },
+      { value: ACCOUNT.totalLikesLabel, label: "likes total", accent: "coral" },
+      { value: "2,064", label: "comments", accent: "plum" },
     ],
   },
 ];

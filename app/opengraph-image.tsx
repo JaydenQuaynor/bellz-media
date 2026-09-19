@@ -31,7 +31,7 @@ export default async function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#14100F",
+          background: "#0F1318",
           padding: "70px 80px",
           fontFamily: "Archivo",
         }}
@@ -41,7 +41,7 @@ export default async function OpengraphImage() {
             style={{
               fontSize: 132,
               letterSpacing: "-0.055em",
-              color: "#F6F4F1",
+              color: "#F2F4F5",
               lineHeight: 1,
             }}
           >
@@ -54,7 +54,7 @@ export default async function OpengraphImage() {
               fontSize: 18,
               letterSpacing: "0.16em",
               textTransform: "uppercase",
-              color: "rgba(246,244,241,0.5)",
+              color: "rgba(242,244,245,0.5)",
             }}
           >
             Organic content and distribution systems for businesses
@@ -75,7 +75,7 @@ export default async function OpengraphImage() {
               style={{
                 fontSize: 92,
                 letterSpacing: "-0.05em",
-                color: "#FF8A1F",
+                color: "#35B9F1",
                 lineHeight: 1,
               }}
             >
@@ -88,7 +88,7 @@ export default async function OpengraphImage() {
                 fontSize: 20,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "rgba(246,244,241,0.55)",
+                color: "rgba(242,244,245,0.55)",
               }}
             >
               {`organic views · ${ACCOUNT.reelCount} reels · ${ACCOUNT.followers} followers`}
@@ -99,8 +99,8 @@ export default async function OpengraphImage() {
             style={{
               display: "flex",
               fontSize: 26,
-              color: "#14100F",
-              background: "#FF8A1F",
+              color: "#0F1318",
+              background: "#35B9F1",
               padding: "18px 28px",
               borderRadius: 10,
             }}

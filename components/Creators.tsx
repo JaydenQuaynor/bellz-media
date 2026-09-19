@@ -13,7 +13,7 @@ export default function Creators() {
     <Section id="creators" tone="paper">
       <div
         className="overflow-hidden rounded-2xl"
-        style={{ background: "var(--indigo)" }}
+        style={{ background: "var(--navy)" }}
       >
         <div className="grid gap-10 p-8 md:p-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16 lg:p-14">
           {/* Address */}
@@ -62,7 +62,7 @@ export default function Creators() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-max rounded-lg bg-white px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.13em] text-ink transition-transform hover:-translate-y-0.5"
-                style={{ color: "var(--indigo)" }}
+                style={{ color: "var(--navy)" }}
               >
                 {CREATORS.cta}
               </a>

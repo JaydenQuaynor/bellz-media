@@ -6,7 +6,7 @@ function Cell({ v }: { v: boolean | string }) {
     return (
       <span
         className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[13px] font-bold text-white"
-        style={{ background: "var(--teal)" }}
+        style={{ background: "var(--coral)" }}
       >
         <span aria-hidden="true">✓</span>
         <span className="sr-only">Yes</span>
@@ -35,7 +35,7 @@ export default function Comparison() {
         <SectionHead
           eyebrow={COMPARISON.eyebrow}
           heading={COMPARISON.heading}
-          accent="teal"
+          accent="coral"
         />
 
         <div data-reveal className="-mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">

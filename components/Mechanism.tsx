@@ -8,7 +8,7 @@ export default function Mechanism() {
       <div className="flex flex-col gap-14 lg:gap-20">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-20">
           <div className="flex flex-col gap-6">
-            <Eyebrow accent="tangerine" onInk>
+            <Eyebrow accent="sky" onInk>
               {MECHANISM.eyebrow}
             </Eyebrow>
             <SectionHeading className="max-w-[14ch]">
@@ -52,7 +52,7 @@ export default function Mechanism() {
             <span
               data-count={ACCOUNT.totalViews}
               className="font-display text-[clamp(3.4rem,13vw,10rem)] font-black leading-[0.8] tracking-[-0.055em] tabular"
-              style={{ color: "var(--tangerine)" }}
+              style={{ color: "var(--sky)" }}
             >
               {ACCOUNT.totalViews.toLocaleString("en-US")}
             </span>
@@ -62,7 +62,7 @@ export default function Mechanism() {
         <div data-reveal="group" className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-t border-white/15 pt-8">
           <span
             className="font-display text-[clamp(2rem,5vw,3rem)] font-black leading-none tracking-[-0.04em] tabular"
-            style={{ color: "var(--tangerine)" }}
+            style={{ color: "var(--sky)" }}
           >
             {MECHANISM.callout.stat}
           </span>

@@ -67,7 +67,7 @@ export const SERVICES = {
   items: [
     {
       n: "UGC creation",
-      accent: "teal" as const,
+      accent: "coral" as const,
       body: "Native-feeling videos that look like a customer made them, not a brand. Shot, scripted and edited by us. You get the raw files and full usage rights for ads, your own feed, and your site.",
       deliverables: [
         "Hook-first scripting",
@@ -78,7 +78,7 @@ export const SERVICES = {
     },
     {
       n: "Organic short-form",
-      accent: "magenta" as const,
+      accent: "plum" as const,
       body: "Content built to be distributed by the algorithm rather than your follower list. This is the work the 6.79M came from — the format, pacing and hook structure that makes a video travel past the people who already know you.",
       deliverables: [
         "Reels, TikToks, Shorts",
@@ -89,7 +89,7 @@ export const SERVICES = {
     },
     {
       n: "Content systems",
-      accent: "indigo" as const,
+      accent: "navy" as const,
       body: "For businesses that want to keep producing after the engagement ends. We build the repeatable part — the formats that work for your business, and how to shoot them without us.",
       deliverables: [
         "Format playbook for your business",
@@ -156,7 +156,7 @@ export const PACKAGES = {
   tiers: [
     {
       name: "Starter",
-      accent: "tangerine" as const,
+      accent: "sky" as const,
       forWho: "One location testing whether this works.",
       items: [
         "4 videos per month",
@@ -169,7 +169,7 @@ export const PACKAGES = {
     },
     {
       name: "Growth",
-      accent: "teal" as const,
+      accent: "coral" as const,
       forWho: "Businesses that want consistent output and a feedback loop.",
       items: [
         "8–10 videos per month",
@@ -183,7 +183,7 @@ export const PACKAGES = {
     },
     {
       name: "Full retainer",
-      accent: "indigo" as const,
+      accent: "navy" as const,
       forWho: "Multi-location, or a launch that needs volume.",
       items: [
         "16+ videos per month",

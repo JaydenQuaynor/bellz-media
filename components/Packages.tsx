@@ -2,9 +2,9 @@ import { CONTACT, PACKAGES } from "@/lib/content";
 import { Section, SectionHead } from "./Section";
 
 const ACCENT: Record<string, string> = {
-  teal: "var(--teal)",
-  tangerine: "var(--tangerine)",
-  indigo: "var(--indigo)",
+  coral: "var(--coral)",
+  sky: "var(--sky)",
+  navy: "var(--navy)",
 };
 
 export default function Packages() {
@@ -15,7 +15,7 @@ export default function Packages() {
           eyebrow={PACKAGES.eyebrow}
           heading={PACKAGES.heading}
           lede={PACKAGES.note}
-          accent="tangerine"
+          accent="sky"
         />
 
         <div data-reveal="group" className="grid gap-5 lg:grid-cols-3 lg:gap-6">
@@ -44,7 +44,7 @@ export default function Packages() {
                 {t.featured ? (
                   <span
                     className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ink"
-                    style={{ background: "var(--tangerine)" }}
+                    style={{ background: "var(--sky)" }}
                   >
                     Most taken
                   </span>

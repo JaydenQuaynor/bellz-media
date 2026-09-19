@@ -2,9 +2,9 @@ import { SERVICES } from "@/lib/content";
 import { Section, SectionHead } from "./Section";
 
 const ACCENT: Record<string, string> = {
-  teal: "var(--teal)",
-  magenta: "var(--magenta)",
-  indigo: "var(--indigo)",
+  coral: "var(--coral)",
+  plum: "var(--plum)",
+  navy: "var(--navy)",
 };
 
 export default function Services() {
@@ -14,7 +14,7 @@ export default function Services() {
         <SectionHead
           eyebrow={SERVICES.eyebrow}
           heading={SERVICES.heading}
-          accent="indigo"
+          accent="navy"
         />
 
         <div data-reveal="group" className="grid gap-px overflow-hidden rounded-2xl bg-rule-strong ring-1 ring-black/[0.08] lg:grid-cols-3">

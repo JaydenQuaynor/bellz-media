@@ -8,7 +8,7 @@ export default function Process() {
         <SectionHead
           eyebrow={PROCESS.eyebrow}
           heading={PROCESS.heading}
-          accent="magenta"
+          accent="plum"
         />
 
         {/* Numbered because each step genuinely depends on the one before it. */}
