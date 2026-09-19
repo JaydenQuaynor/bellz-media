@@ -172,3 +172,56 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Reel tickers — two rows drifting past each other.
+   Each track holds two identical groups and travels exactly one
+   group's width, so the loop has no seam. The trailing gap lives
+   INSIDE each group (padding-right); put it on the track as a gap
+   instead and the seam lands half a gap short.
+   ────────────────────────────────────────────────────────────── */
+@keyframes ticker-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes ticker-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.ticker-track {
+  width: max-content;
+  animation: ticker-left var(--ticker-duration, 54s) linear infinite;
+  will-change: transform;
+}
+.ticker-track[data-dir="right"] {
+  animation-name: ticker-right;
+}
+
+/* Stop for anyone reading a card or tabbing through one */
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker {
+    overflow-x: auto;
+  }
+  /* animation-name: none beats the global duration override below */
+  .ticker-track {
+    animation: none;
+  }
+  /* Nothing is looping, so the second copy is just every reel listed twice */
+  .ticker-track > div + div {
+    display: none;
+  }
+}

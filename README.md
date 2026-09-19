@@ -147,18 +147,30 @@ stock grey.
 
 ## Animation
 
-- **Hero** ([`components/Hero.tsx`](components/Hero.tsx)) — the brief bar types
-  a query and the two rows below genuinely answer it. Each query is a ranker in
-  [`lib/briefs.ts`](lib/briefs.ts) over the real reel data; the rows read left
-  to right in rank order, so asking for Connecticut promotes that work to the
-  front of the top row. Chips let a visitor drive it, which cancels the
-  auto-cycle. Thirteen cards for thirteen reels — seven up, six below — so the
-  count shown in the bar is exactly what is on screen.
+- **Hero** ([`components/Hero.tsx`](components/Hero.tsx)) — two tickers running
+  opposite ways, driven by CSS keyframes rather than JS. Three things about
+  them are load-bearing:
 
-  Both rows scroll horizontally and carry `scroll-pl-*` matching the page
-  gutter; without it the snap point sits at the card edge and the row parks
-  out of line with the masthead. Only the first few cards are video — thirteen
-  playing at once is not worth the bytes.
+  - **Each row carries all thirteen reels, not a slice.** A seamless loop needs
+    two identical copies of the track, and a copy narrower than the viewport
+    puts both on screen at once — a seven-card row showed the same reel twice
+    at 1440px. Thirteen cards is ~3200px, wide enough that only one copy is
+    ever visible. Row B starts six reels in so the rows never match up.
+  - **The trailing gap lives inside each group** (`padding-right`), not as a
+    gap on the track. Put it on the track and `translateX(-50%)` lands half a
+    gap short of the seam.
+  - **Cards animate opacity only — never scale or translate.** A card that
+    scales is, for the length of the tween, shorter than the row it sits in,
+    and 52 of them on a stagger reads as a row of mismatched heights. The
+    ticker is already moving; it doesn't need a second entrance.
+
+  Hovering or tabbing into a row pauses it. Under `prefers-reduced-motion` the
+  rows stop, become horizontally scrollable, and drop the duplicate copy.
+
+  The chips re-rank what the rows show and swap the stat cards — each is a
+  ranker in [`lib/briefs.ts`](lib/briefs.ts) over the real reel data. There's
+  no auto-cycle: the tickers supply the motion, so the sort only changes when
+  someone asks it to.
 - **Scroll reveals** ([`components/ScrollReveal.tsx`](components/ScrollReveal.tsx))
   — driven by `data-reveal` / `data-reveal="group"` / `data-count` attributes,
   so the section components stay server-rendered. Add the attribute, get the

@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { BRIEFS, TOP_REEL_ID } from "@/lib/briefs";
-import { REELS } from "@/lib/reels";
+import { REELS, type Reel } from "@/lib/reels";
 import ReelCard from "./ReelCard";
 import { StatCard, StatStack } from "./StatCard";
 
@@ -23,30 +23,57 @@ const AUDIENCES = [
 type Cell = { variant: "s" | "p"; media: "video" | "poster" };
 
 /**
- * Two scrollable rows, read left to right in rank order: row one takes results
- * 1–7, row two takes 8–13, so re-sorting visibly promotes work to the front of
- * the top row. Portrait and square alternate to break the grid up, and only the
- * first few cards carry video — thirteen playing at once is not worth the bytes.
+ * Two tickers running opposite ways.
+ *
+ * Each row carries all thirteen reels, not a slice of them. A seamless loop
+ * needs two identical copies of the track, and a copy narrower than the
+ * viewport puts both on screen at once — at 1440px a seven-card row showed
+ * the same reel twice, side by side. Thirteen cards is ~3200px, wide enough
+ * that only one copy is ever visible.
+ *
+ * Row B starts six reels in, so the two rows are never showing the same card
+ * at the same moment, and only two cards per row carry video — the posters
+ * are frames of the same reels and nobody is counting decoded streams.
  */
 const ROW_A: Cell[] = [
   { variant: "p", media: "video" },
+  { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
   { variant: "p", media: "video" },
-  { variant: "s", media: "video" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
   { variant: "p", media: "poster" },
   { variant: "p", media: "poster" },
   { variant: "s", media: "poster" },
   { variant: "p", media: "poster" },
 ];
 const ROW_B: Cell[] = [
-  { variant: "s", media: "video" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "video" },
+  { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
   { variant: "p", media: "poster" },
   { variant: "p", media: "poster" },
+  { variant: "s", media: "poster" },
+  { variant: "p", media: "poster" },
+  { variant: "p", media: "video" },
   { variant: "s", media: "poster" },
   { variant: "p", media: "poster" },
   { variant: "p", media: "poster" },
 ];
 
+/** Row B's starting reel, so the rows never line up on the same card. */
+const ROW_B_START = 6;
+
 const RATIO = { p: "4 / 5", s: "1 / 1" } as const;
+
+/** Slightly different speeds, so the two rows never settle into a rhythm. */
+const SPEED_A = "96s";
+const SPEED_B = "112s";
 
 /**
  * Splits a line into per-word masks so each word can slide up independently.
@@ -69,15 +96,67 @@ function Words({ text }: { text: string }) {
   );
 }
 
+/** One copy of a row. The track holds two of these back to back. */
+function Group({
+  cells,
+  results,
+  decorative = false,
+}: {
+  cells: Cell[];
+  results: Reel[];
+  decorative?: boolean;
+}) {
+  return (
+    <div className="flex h-full shrink-0 gap-3 pr-3 md:gap-4 md:pr-4">
+      {cells.map((cell, i) => {
+        const reel = results[i];
+        if (!reel) return null;
+        return (
+          <ReelCard
+            key={i}
+            reel={reel}
+            media={cell.media}
+            variant={cell.variant}
+            decorative={decorative}
+            className="h-full shrink-0"
+            style={{ aspectRatio: RATIO[cell.variant] }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function Ticker({
+  cells,
+  results,
+  dir,
+  duration,
+}: {
+  cells: Cell[];
+  results: Reel[];
+  dir: "left" | "right";
+  duration: string;
+}) {
+  return (
+    <div className="ticker relative h-[190px] overflow-hidden sm:h-[230px] lg:h-[270px]">
+      <div
+        className="ticker-track flex h-full"
+        data-dir={dir}
+        style={{ ["--ticker-duration" as string]: duration }}
+      >
+        <Group cells={cells} results={results} />
+        <Group cells={cells} results={results} decorative />
+      </div>
+    </div>
+  );
+}
+
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
-  const queryRef = useRef<HTMLSpanElement>(null);
   const audienceRef = useRef<HTMLSpanElement>(null);
-  const rowA = useRef<HTMLDivElement>(null);
-  const rowB = useRef<HTMLDivElement>(null);
-  const selectRef = useRef<((i: number) => void) | null>(null);
+  const mounted = useRef(false);
   const [brief, setBrief] = useState(0);
-  const [auto, setAuto] = useState(true);
 
   // Warm every poster so a re-sort never shows an empty card.
   useEffect(() => {
@@ -89,29 +168,18 @@ export default function Hero() {
     });
   }, []);
 
-  // A new query puts a new reel in first place — send both rows back to it.
-  useEffect(() => {
-    for (const ref of [rowA, rowB]) {
-      ref.current?.scrollTo({ left: 0, behavior: "smooth" });
-    }
-  }, [brief]);
-
   useIsoLayoutEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray<HTMLElement>(".reel-card");
-      const stats = gsap.utils.toArray<HTMLElement>(".stat-card");
-
       if (reduced) {
-        gsap.set([".word", cards, stats], { opacity: 1, y: 0, scale: 1 });
-        if (queryRef.current) queryRef.current.textContent = BRIEFS[0].query;
+        gsap.set([".word", ".reel-card", ".stat-card"], {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+        });
         return;
       }
-
-      // The rows start hidden; the first pass of the loop IS their entrance.
-      gsap.set(cards, { opacity: 0, scale: 0.88, y: 24 });
-      gsap.set(stats, { opacity: 0 });
 
       gsap
         .timeline()
@@ -127,8 +195,35 @@ export default function Hero() {
           "-=0.45",
         )
         .from(
-          ".brief-bar",
-          { opacity: 0, y: 16, duration: 0.7, ease: "power3.out" },
+          ".hero-controls",
+          { opacity: 0, y: 14, duration: 0.6, ease: "power3.out" },
+          "-=0.45",
+        )
+        /* Opacity only. A card that scales or shifts is, for the length of
+           the tween, shorter than the row it sits in — with 52 of them on a
+           per-card stagger that reads as a row of mismatched heights. The
+           ticker is already moving; it does not need a second entrance.
+           `amount` caps the whole ripple at half a second however many
+           cards there are. */
+        .from(
+          ".reel-card",
+          {
+            opacity: 0,
+            duration: 0.7,
+            ease: "power2.out",
+            stagger: { amount: 0.5, from: "start" },
+          },
+          "-=0.35",
+        )
+        .from(
+          ".stat-card",
+          {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.5,
+            ease: "back.out(2)",
+            stagger: 0.07,
+          },
           "-=0.5",
         );
 
@@ -152,173 +247,47 @@ export default function Hero() {
       };
       const audienceTimer = window.setInterval(cycleAudience, 3400);
 
-      // ── Query loop ──────────────────────────────────────────────
-      const typer = { i: 0 };
-      let current: gsap.core.Timeline | null = null;
-      let autoAdvance = true;
-
-      const type = (tl: gsap.core.Timeline, q: string, at?: string) =>
-        tl.fromTo(
-          typer,
-          { i: 0 },
-          {
-            i: q.length,
-            duration: Math.max(0.8, q.length * 0.03),
-            ease: "none",
-            onUpdate: () => {
-              if (queryRef.current)
-                queryRef.current.textContent = q.slice(0, Math.round(typer.i));
-            },
-          },
-          at,
-        );
-
-      const show = (tl: gsap.core.Timeline, index: number) =>
-        tl
-          .call(() => setBrief(index))
-          .to(
-            cards,
-            {
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              duration: 0.6,
-              ease: "power3.out",
-              // Left to right: the answer lands in rank order.
-              stagger: { each: 0.032, from: "start" },
-            },
-            "+=0.06",
-          )
-          .fromTo(
-            stats,
-            { opacity: 0, scale: 0.9, y: 8 },
-            {
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              duration: 0.5,
-              ease: "back.out(2)",
-              stagger: 0.07,
-            },
-            "-=0.4",
-          );
-
-      /* Ghosted, not cleared. Two tidy rows dropping to zero between queries
-         reads as a loading state; holding them faint keeps the shape of the
-         answer while it re-sorts. */
-      const hide = (tl: gsap.core.Timeline) =>
-        tl
-          .to(stats, { opacity: 0, scale: 0.92, duration: 0.28, ease: "power2.in" })
-          .to(
-            cards,
-            {
-              opacity: 0.12,
-              scale: 0.94,
-              y: 10,
-              duration: 0.38,
-              ease: "power2.in",
-              stagger: { each: 0.02, from: "random" },
-            },
-            "-=0.22",
-          );
-
-      const runBrief = (index: number) => {
-        const next = (index + 1) % BRIEFS.length;
-        const tl = gsap.timeline({
-          onComplete: () => {
-            if (autoAdvance) runBrief(next);
-          },
-        });
-        current = tl;
-
-        show(tl, index);
-        type(tl, BRIEFS[index].query, "-=0.3");
-        tl.to({}, { duration: 3.9 });
-        hide(tl);
-        tl.to(
-          typer,
-          {
-            i: 0,
-            duration: 0.3,
-            ease: "none",
-            onUpdate: () => {
-              if (queryRef.current)
-                queryRef.current.textContent = BRIEFS[index].query.slice(
-                  0,
-                  Math.round(typer.i),
-                );
-            },
-          },
-          "-=0.45",
-        );
-      };
-
-      /** A chip click takes over: cancel the loop, run this query, stay put. */
-      selectRef.current = (index: number) => {
-        autoAdvance = false;
-        setAuto(false);
-        current?.kill();
-
-        const tl = gsap.timeline();
-        current = tl;
-        if (queryRef.current) queryRef.current.textContent = "";
-        hide(tl);
-        show(tl, index);
-        type(tl, BRIEFS[index].query, "-=0.3");
-      };
-
-      gsap.delayedCall(0.55, () => runBrief(0));
-
-      return () => {
-        window.clearInterval(audienceTimer);
-        selectRef.current = null;
-      };
+      return () => window.clearInterval(audienceTimer);
     }, root);
 
     return () => ctx.revert();
   }, []);
 
-  const active = BRIEFS[brief];
+  /* A sort swaps what every card points at. Fading from part-way rather than
+     from zero keeps the rows from blinking out while they are still moving,
+     and fading is all it does — see the entrance note on why nothing scales. */
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  /** One scrollable row. `offset` is the rank of its first card. */
-  const Row = ({
-    cells,
-    offset,
-    scrollRef,
-    indent = false,
-  }: {
-    cells: Cell[];
-    offset: number;
-    scrollRef: React.RefObject<HTMLDivElement | null>;
-    indent?: boolean;
-  }) => (
-    <div
-      ref={scrollRef}
-      /* scroll-padding matches the gutter: without it the snap points sit at
-         the card edge and the row parks with its first card flush to the
-         viewport, out of line with the masthead above. */
-      className={`no-scrollbar flex h-[190px] snap-x scroll-pl-5 gap-3 overflow-x-auto px-5 sm:h-[230px] md:gap-4 md:scroll-pl-8 md:px-8 lg:h-[270px] ${
-        // Staggering the second row keeps the two from locking into a grid.
-        indent ? "lg:scroll-pl-[7%] lg:pl-[7%]" : ""
-      }`}
-    >
-      {cells.map((cell, i) => {
-        const reel = active.results[offset + i];
-        if (!reel) return null;
-        return (
-          <ReelCard
-            // Keyed by position so React updates in place and GSAP keeps its targets.
-            key={`cell-${offset + i}`}
-            reel={reel}
-            media={cell.media}
-            variant={cell.variant}
-            className="h-full shrink-0 snap-start"
-            style={{ aspectRatio: RATIO[cell.variant] }}
-          />
-        );
-      })}
-    </div>
-  );
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".reel-card",
+        { opacity: 0.25 },
+        {
+          opacity: 1,
+          duration: 0.55,
+          ease: "power2.out",
+          stagger: { amount: 0.35, from: "random" },
+        },
+      );
+      gsap.fromTo(
+        ".stat-card",
+        { opacity: 0, scale: 0.92 },
+        { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)", stagger: 0.06 },
+      );
+    }, root);
+    return () => ctx.revert();
+  }, [brief]);
+
+  const active = BRIEFS[brief];
+  const rowBResults = [
+    ...active.results.slice(ROW_B_START),
+    ...active.results.slice(0, ROW_B_START),
+  ];
 
   return (
     <header ref={root} className="relative flex flex-col">
@@ -401,67 +370,52 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* ── Result wall ─────────────────────────────────────────── */}
+      {/* ── The wall ────────────────────────────────────────────── */}
       <div className="bg-grid relative isolate border-y border-rule bg-paper pb-7 md:pb-9">
-        {/* The query sits above its results, the way a search does. */}
-        <div className="px-5 pb-5 pt-7 md:px-8 md:pt-9">
-          <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-4">
-            <div className="brief-bar flex w-full items-center gap-3 rounded-full border border-black/[0.06] bg-card/95 py-2 pl-6 pr-2 shadow-[0_2px_6px_rgba(16,16,20,0.05),0_24px_50px_-24px_rgba(16,16,20,0.28)] backdrop-blur-sm">
-              <span className="flex min-w-0 flex-1 items-center font-mono text-[11px] uppercase tracking-[0.13em] text-ink/80 lg:text-[12px]">
-                <span ref={queryRef} className="truncate" />
-                <span
-                  aria-hidden="true"
-                  className="ml-0.5 inline-block h-[1.05em] w-[7px] shrink-0 animate-[blink_1.05s_steps(1)_infinite] bg-ink/70 align-middle"
-                />
+        <div className="hero-controls px-5 pb-6 pt-7 md:px-8 md:pt-8">
+          <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-mute">
+                Sort:
               </span>
-
-              <span className="hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-mute md:inline">
-                {active.count} reels · {active.sortLabel}
-              </span>
-
-              <a
-                href="#work"
-                className="shrink-0 whitespace-nowrap rounded-full bg-ink px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-transform hover:-translate-y-px lg:text-[11px]"
-              >
-                See the work
-              </a>
+              {BRIEFS.map((b, i) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBrief(i)}
+                  aria-pressed={brief === i}
+                  className={`rounded-full border px-3 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] transition-colors ${
+                    brief === i
+                      ? "border-ink bg-ink text-white"
+                      : "border-black/[0.12] bg-card/80 text-ink/70 hover:border-ink/40 hover:text-ink"
+                  }`}
+                >
+                  {b.chip}
+                </button>
+              ))}
             </div>
 
-            {/* Drive it yourself */}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-mute">
-                  {auto ? "Try:" : "Showing:"}
-                </span>
-                {BRIEFS.map((b, i) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    onClick={() => selectRef.current?.(i)}
-                    aria-pressed={brief === i}
-                    className={`rounded-full border px-3 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] transition-colors ${
-                      brief === i
-                        ? "border-ink bg-ink text-white"
-                        : "border-black/[0.12] bg-card/80 text-ink/70 hover:border-ink/40 hover:text-ink"
-                    }`}
-                  >
-                    {b.chip}
-                  </button>
-                ))}
-              </div>
-
-              {/* Stacked cards that fan down over the rows on hover */}
-              <StatStack
-                stats={active.stats}
-                className="relative z-20 hidden shrink-0 lg:block"
-              />
-            </div>
+            {/* Stacked cards that fan down over the rows on hover */}
+            <StatStack
+              stats={active.stats}
+              className="relative z-20 hidden shrink-0 lg:block"
+            />
           </div>
         </div>
 
         <div className="flex flex-col gap-3 md:gap-4">
-          <Row cells={ROW_A} offset={0} scrollRef={rowA} />
-          <Row cells={ROW_B} offset={ROW_A.length} scrollRef={rowB} indent />
+          <Ticker
+            cells={ROW_A}
+            results={active.results}
+            dir="left"
+            duration={SPEED_A}
+          />
+          <Ticker
+            cells={ROW_B}
+            results={rowBResults}
+            dir="right"
+            duration={SPEED_B}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2 px-5 pt-6 md:px-8 lg:hidden">
