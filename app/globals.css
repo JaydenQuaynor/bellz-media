@@ -1,26 +1,160 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────────────
+   Bellz Media — design tokens
+   A committed single-theme light identity. Every colour is painted
+   explicitly so the page holds on any host ground.
+   ────────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  /* Ground — neutrals biased warm, toward the accent, not stock grey */
+  --paper: #f6f4f1;
+  --card: #ffffff;
+  --ink: #14100f;
+  --mute: #7a7068;
+  --rule: rgba(20, 16, 15, 0.1);
+  --rule-strong: rgba(20, 16, 15, 0.22);
+
+  /* Accents. Tangerine leads: it is the only one used both as a fill under
+     ink text and as bright text on ink, so it is tuned to clear 4.5:1 in
+     both directions (8.0:1 against --ink). The other three are dark enough
+     to carry white text on a filled panel. */
+  --tangerine: #ff8a1f;
+  --teal: #046d76;
+  --magenta: #d6176b;
+  --indigo: #2d1e8c;
+
+  /* Grid canvas */
+  --grid-size: 32px;
+  --grid-line: rgba(20, 16, 15, 0.075);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-tangerine: var(--tangerine);
+  --color-teal: var(--teal);
+  --color-magenta: var(--magenta);
+  --color-indigo: var(--indigo);
+
+  --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-azeret), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-synthesis-weight: none;
+}
+
+/* Graph-paper canvas — two hairline gradients, matching the 32px module */
+.bg-grid {
+  background-image:
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:
+    100% var(--grid-size),
+    var(--grid-size) 100%;
+}
+
+/* Word-mask reveal: each word sits in an overflow-hidden box and slides up */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+.word-mask > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* FAQ disclosure: animate the panel open where the browser supports it,
+   falling back to an instant open everywhere else. */
+.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    content-visibility 0.36s allow-discrete,
+    block-size 0.36s var(--ease-out),
+    opacity 0.28s ease;
+}
+.faq[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+@supports not (interpolate-size: allow-keywords) {
+  .faq::details-content {
+    transition: none;
+  }
+}
+:root {
+  interpolate-size: allow-keywords;
+}
+
+.faq summary:hover .faq-icon {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Stacked pop-up cards: layered at rest, fanned apart on hover/focus */
+.stat-layer {
+  transform: translate(var(--rest-x), var(--rest-y)) rotate(var(--rest-r));
+}
+.stat-stack:hover .stat-layer,
+.stat-stack:focus-within .stat-layer {
+  transform: translate(0, var(--fan-y)) rotate(0deg);
+}
+
+/* Visible keyboard focus everywhere */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--tangerine);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

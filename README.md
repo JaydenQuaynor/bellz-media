@@ -1,36 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bellz Media
 
-## Getting Started
+Marketing site for Bellz Media — a short-form video collective for Connecticut
+businesses, led by Jeffery Antwi ([@jeffbells7](https://www.instagram.com/jeffbells7/)).
+It sells to businesses and recruits creators, in that order.
 
-First, run the development server:
+Next.js 16 (App Router) · Tailwind v4 · GSAP · Lenis. Static export-friendly —
+every route prerenders.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev     # http://localhost:3000
+npm run build   # production build
+npm start       # serve the build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Before it goes live
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Five placeholders are on the page right now and will 404 for a real visitor.
+All of them are at the top of [`lib/content.ts`](lib/content.ts):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Constant           | Current (fake)                          | Needs                          |
+| ------------------ | --------------------------------------- | ------------------------------ |
+| `siteUrl`          | `https://bellzmedia.co`                 | the real domain                |
+| `bookingUrl`       | `https://cal.com/bellz-media/15min`     | Jeff's real scheduler link     |
+| `email`            | `jeff@bellzmedia.co`                    | Jeff's real address            |
+| `creatorApplyUrl`  | `https://tally.so/r/bellz-media-creators` | the real creator application  |
+| `creatorEmail`     | `creators@bellzmedia.co`                | a real inbox for applicants    |
 
-## Learn More
+`siteUrl` also feeds `metadataBase`, the canonical tag, `robots.txt` and
+`sitemap.xml`, so set it before the first deploy or the share previews and
+sitemap will point at a domain that doesn't exist.
 
-To learn more about Next.js, take a look at the following resources:
+Still unresolved, and it affects copy that is currently published:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **No client roster exists.** The scrape found zero paid partnerships across
+  all 52 reels. The site is deliberately built without a logo wall or
+  testimonials, and leans on the founding-client offer instead. If real brand
+  work turns up, add a clients section — don't fabricate one.
+- **QuickMovee** is framed as "a product launch", which is true whether or not
+  it was paid. If it was a paying client, "client campaign" is stronger.
+- **The collective's size is never stated.** Only Jeff's account has been
+  measured, so the creator section recruits without claiming network-wide
+  numbers. Don't add "20+ creators" or a combined view count unless someone
+  can actually back it.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Two audiences
 
-## Deploy on Vercel
+The page sells to businesses. The creator recruitment pitch
+([`components/Creators.tsx`](components/Creators.tsx)) deliberately sits
+**after** the brand booking section, so it never competes with the conversion
+that pays. Creators reach it via the nav link, the footer, or by scrolling.
+Keep that order if you rearrange sections.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## The masthead says what, not where
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Two separate things, stacked:
+
+```
+Bellz Media                                              ← the name, whole
+Organic content and distribution systems for businesses  ← what it does
+```
+
+The descriptor used to read "Media — Short-Form Studio · Connecticut", which
+welded half the brand name onto the positioning line and led with the location.
+Both were fixed: the wordmark carries the full name, and the location came out
+because leading with the state caps the brand at the state line — the offer is
+meant to travel further than the work has so far.
+
+The wordmark's type steps are sized so "Bellz Media" holds one line from the
+`lg` breakpoint up and breaks to a stacked "Bellz / Media" on a phone rather
+than shrinking to fit. If you change the copy, re-check 1024px — that's the
+tightest width, where it sits beside the offer column.
+
+Three places carry that same sentence and have to stay in sync:
+[`components/Hero.tsx`](components/Hero.tsx) (the masthead),
+[`app/opengraph-image.tsx`](app/opengraph-image.tsx) (the share card) and
+`DESCRIPTION` in [`app/layout.tsx`](app/layout.tsx) (search results).
+
+Connecticut still appears where it's a fact rather than a ceiling — the
+`Connecticut` query in the hero, the case studies, the comparison table, the
+FAQ, the sticky bar and the footer. Don't put it back in the masthead.
+
+## Where things live
+
+```
+app/
+  layout.tsx           metadata, fonts (Archivo + Azeret Mono)
+  page.tsx             section order — the whole funnel
+  opengraph-image.tsx  share card, rendered by Satori at build
+  icon.svg             favicon
+lib/
+  reels.ts             GENERATED from the Instagram scrape — don't hand-edit
+  content.ts           all site copy, edit freely
+  briefs.ts            the hero's rotating queries
+components/            one file per section
+public/reels/          13 reels, portrait + square, video + poster (21MB)
+assets/fonts/          TTFs for the OG image (Satori can't read woff2)
+```
+
+**Copy edits go in `lib/content.ts`.** You shouldn't need to touch a component
+to reword anything.
+
+## The numbers are real
+
+Every figure on the page traces to `lib/reels.ts`, which was generated from an
+Apify scrape of the account on 2026-09-19 — 52 reels, 6,794,221 total views.
+Two rules:
+
+1. **Don't hand-edit `lib/reels.ts`.** Re-run the scrape and regenerate it.
+2. **Don't quote an average.** The distribution is top-heavy — five reels carry
+   96% of the views and the median is 5,158. "6.79M total" and "5 past 400K"
+   both survive a prospect checking the account. "Averages 130K" does not.
+
+The FAQ addresses the variance directly rather than hiding it; that's
+deliberate, and it's load-bearing for trust. Don't soften it.
+
+## Palette
+
+Four accents, defined once in [`app/globals.css`](app/globals.css) and exposed
+to Tailwind through `@theme inline`. Nothing hardcodes a hex except the OG card,
+which Satori renders outside CSS.
+
+| Token         | Hex       | Role                                                    |
+| ------------- | --------- | ------------------------------------------------------- |
+| `--tangerine` | `#ff8a1f` | the signature — highlight, favicon, share card, selection |
+| `--teal`      | `#046d76` | focus ring, comparison ticks, section eyebrows           |
+| `--magenta`   | `#d6176b` | kickers and stat cards                                   |
+| `--indigo`    | `#2d1e8c` | the creator panel                                        |
+
+**Tangerine is the constrained one.** It's the only accent used in both
+directions — as a fill under ink text (the founding-clients panel, the hero's
+highlighted word) *and* as bright text on an ink panel (the Mechanism figures).
+It's tuned to 8:1 against `--ink` so it clears AA either way. If you retune it,
+check both, and check `text-ink/75` on the founding panel — at `/60` it drops
+under 4.5:1.
+
+The other three only ever carry white text on a filled panel, so they're kept
+dark enough for that and can be brighter or duller without breaking anything.
+
+Neutrals are warm on purpose (`--ink` is `#14100f`, not a neutral black) so the
+page reads as one temperature with the orange rather than orange dropped onto
+stock grey.
+
+## Animation
+
+- **Hero** ([`components/Hero.tsx`](components/Hero.tsx)) — the brief bar types
+  a query and the wall genuinely answers it. Each query is a ranker in
+  [`lib/briefs.ts`](lib/briefs.ts) over the real reel data; slots are ordered by
+  prominence, so slot 0 always holds the top result and asking for Connecticut
+  promotes the Connecticut work into the biggest cards. Chips let a visitor
+  drive it, which cancels the auto-cycle. Thirteen slots for thirteen reels, so
+  the count shown in the bar is exactly what is on screen.
+- **Scroll reveals** ([`components/ScrollReveal.tsx`](components/ScrollReveal.tsx))
+  — driven by `data-reveal` / `data-reveal="group"` / `data-count` attributes,
+  so the section components stay server-rendered. Add the attribute, get the
+  animation.
+- **Lenis** is synced to the GSAP ticker in
+  [`components/SmoothScroll.tsx`](components/SmoothScroll.tsx). Without
+  `lenis.on("scroll", ScrollTrigger.update)` the reveals fire at wrong
+  positions.
+
+Everything is gated behind `prefers-reduced-motion`.
+
+## Deploying
+
+Vercel: import the repo, no configuration needed. Set the real `siteUrl` first.
+
+`public/reels` is 21MB of video committed to the repo. That's fine for Vercel
+and keeps the site dependency-free, but if the reel count grows, move it to a
+CDN or blob store rather than letting the repo balloon.
